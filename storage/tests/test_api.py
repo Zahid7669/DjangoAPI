@@ -128,3 +128,21 @@ class TestExceptionHandling(TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertIn('file', resp.data)
         self.assertIn('Invalid file ID', str(resp.data['file']))
+
+    def test_nonexistent_user_id_filter(self):
+        """Test that filtering by non-existent user ID returns error"""
+        self.client.force_authenticate(user=self.user_with_org)
+        resp = self.client.get('/api/downloads/?user=99999')
+        
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('user', resp.data)
+        self.assertIn('does not exist', str(resp.data['user']))
+
+    def test_nonexistent_file_id_filter(self):
+        """Test that filtering by non-existent file ID returns error"""
+        self.client.force_authenticate(user=self.user_with_org)
+        resp = self.client.get('/api/downloads/?file=99999')
+        
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('file', resp.data)
+        self.assertIn('does not exist', str(resp.data['file']))

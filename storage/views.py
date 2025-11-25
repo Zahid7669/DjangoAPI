@@ -141,6 +141,13 @@ class DownloadViewSet(viewsets.ReadOnlyModelViewSet):
             if user_id:
                 try:
                     user_id = int(user_id)
+                    # Check if user exists
+                    from .models import User
+                    if not User.objects.filter(id=user_id).exists():
+                        logger.warning(f"User with ID {user_id} does not exist")
+                        raise ValidationError({
+                            'user': f'User with ID {user_id} does not exist.'
+                        })
                     qs = qs.filter(user__id=user_id)
                 except ValueError:
                     logger.warning(f"Invalid user_id parameter: {user_id}")
@@ -152,6 +159,12 @@ class DownloadViewSet(viewsets.ReadOnlyModelViewSet):
             if file_id:
                 try:
                     file_id = int(file_id)
+                    # Check if file exists
+                    if not UploadedFile.objects.filter(id=file_id).exists():
+                        logger.warning(f"File with ID {file_id} does not exist")
+                        raise ValidationError({
+                            'file': f'File with ID {file_id} does not exist.'
+                        })
                     qs = qs.filter(file__id=file_id)
                 except ValueError:
                     logger.warning(f"Invalid file_id parameter: {file_id}")
