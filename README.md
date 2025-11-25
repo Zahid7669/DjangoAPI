@@ -55,21 +55,19 @@ A RESTful API built with Django and Django REST Framework that allows authentica
    docker compose up -d
    ```
 
-3. **Run database migrations**
+3. **Run initial setup** (migrations + admin + demo users)
    ```bash
-   make migrate
-   ```
-
-4. **Create demo users**
-   ```bash
-   make createdemo
+   make setup
    ```
    
-   This creates:
-   - User: `alice`, Password: `password` (Organization A)
-   - User: `bob`, Password: `password` (Organization B)
+   This will:
+   - Run database migrations
+   - Create admin user: `admin` / `admin`
+   - Create demo users:
+     - `alice` / `password` (Organization A)
+     - `bob` / `password` (Organization B)
 
-5. **Verify installation**
+4. **Verify installation**
    ```bash
    make test
    ```
@@ -79,8 +77,9 @@ A RESTful API built with Django and Django REST Framework that allows authentica
 ### Using the Application
 
 1. **Open the browsable API**: http://localhost:8000/api/
-2. **Login**: Click "Log in" (top-right), use `alice` / `password`
-3. **Upload a file**:
+2. **Access Django Admin**: http://localhost:8000/admin/ (login with `admin` / `admin`)
+3. **Login to API**: Click "Log in" (top-right), use `alice` / `password` or `admin` / `admin`
+4. **Upload a file**:
    - Go to http://localhost:8000/api/files/
    - Scroll to the POST form
    - Choose a file and click POST
@@ -88,12 +87,26 @@ A RESTful API built with Django and Django REST Framework that allows authentica
    - Note the file ID from the upload response
    - Visit http://localhost:8000/api/files/{id}/download/
 
+### User Credentials
+
+**Admin User:**
+- Username: `admin`
+- Password: `admin`
+- Access: Django Admin + Full API access
+
+**Demo Users:**
+- `alice` / `password` (Organization A)
+- `bob` / `password` (Organization B)
+
 ### Additional Commands
 
 ```bash
+make setup             # Run migrations + create admin + demo users
 make logs              # View application logs
 make shell             # Open Django shell
-make createsuperuser   # Create admin user
+make createadmin       # Create admin user only
+make createdemo        # Create demo users only
+make createsuperuser   # Create custom admin user (interactive)
 make down              # Stop services
 ```
 
