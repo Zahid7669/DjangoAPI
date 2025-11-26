@@ -82,7 +82,7 @@ A RESTful API built with Django and Django REST Framework that allows authentica
    docker compose exec web python manage.py test storage
    ```
    
-   You should see: `Ran 9 tests in X.XXXs - OK`
+   You should see: `Ran 10 tests in X.XXXs - OK`
 
 **User Credentials Created:**
 - Admin: `admin` / `admin`
