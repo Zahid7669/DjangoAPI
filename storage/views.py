@@ -43,6 +43,15 @@ class UploadedFileViewSet(viewsets.ModelViewSet):
                 'file': 'No file was uploaded. Please select a file to upload.'
             })
         
+        # Validate file size (10MB limit)
+        max_file_size = 10 * 1024 * 1024  # 10 MB in bytes
+        if uploaded_file.size > max_file_size:
+            file_size_mb = uploaded_file.size / (1024 * 1024)
+            logger.warning(f"User {user.username} attempted to upload file {uploaded_file.name} ({file_size_mb:.2f}MB) exceeding limit")
+            raise ValidationError({
+                'file': f'File size ({file_size_mb:.2f} MB) exceeds the maximum allowed size of 10 MB.'
+            })
+        
         try:
             original_name = uploaded_file.name
             serializer.save(
@@ -50,7 +59,7 @@ class UploadedFileViewSet(viewsets.ModelViewSet):
                 organization=user.organization,
                 original_name=original_name
             )
-            logger.info(f"User {user.username} uploaded file: {original_name}")
+            logger.info(f"User {user.username} uploaded file: {original_name} ({uploaded_file.size} bytes)")
         except IntegrityError as e:
             logger.error(f"Database integrity error during file upload: {str(e)}")
             raise ValidationError({

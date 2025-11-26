@@ -146,3 +146,17 @@ class TestExceptionHandling(TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertIn('file', resp.data)
         self.assertIn('does not exist', str(resp.data['file']))
+
+    def test_file_size_limit(self):
+        """Test that uploading a file larger than 10MB is rejected"""
+        self.client.force_authenticate(user=self.user_with_org)
+        
+        # Create a file larger than 10MB (10 * 1024 * 1024 bytes)
+        large_content = b'x' * (11 * 1024 * 1024)  # 11 MB
+        large_file = SimpleUploadedFile('large_file.bin', large_content)
+        
+        resp = self.client.post('/api/files/', {'file': large_file}, format='multipart')
+        
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn('file', resp.data)
+        self.assertIn('exceeds the maximum allowed size', str(resp.data['file']))

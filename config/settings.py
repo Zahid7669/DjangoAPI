@@ -89,6 +89,12 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'storage.User'
 
+# File Upload Settings
+# Maximum size for a single file upload (in bytes)
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB - Files larger than this are saved to disk temporarily
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10 MB - Maximum size for request body (including file)
+# Note: For larger file size limits, adjust these values or implement chunked uploads
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
