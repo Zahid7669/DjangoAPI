@@ -27,7 +27,7 @@ class UploadedFile(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name='files')
     file = models.FileField(upload_to='uploads/')
     original_name = models.CharField(max_length=512)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     def clean(self):
         """Validate uploaded file data"""
@@ -59,7 +59,14 @@ class UploadedFile(models.Model):
 class Download(models.Model):
     file = models.ForeignKey(UploadedFile, on_delete=models.CASCADE, related_name='downloads')
     user = models.ForeignKey('storage.User', on_delete=models.CASCADE, related_name='downloads')
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['file', 'user']),
+            models.Index(fields=['user', 'timestamp']),
+            models.Index(fields=['file', 'timestamp']),
+        ]
 
     def clean(self):
         """Validate download record"""
