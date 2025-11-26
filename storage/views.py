@@ -132,46 +132,37 @@ class DownloadViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = DownloadSerializer
     permission_classes = [IsAuthenticated]
 
+    def _validate_and_filter_by_id(self, queryset, param_name, filter_field, model_class, model_name):
+        """Helper method to validate ID parameter and filter queryset"""
+        param_value = self.request.query_params.get(param_name)
+        if not param_value:
+            return queryset
+        
+        try:
+            param_id = int(param_value)
+            # Check if the record exists
+            if not model_class.objects.filter(id=param_id).exists():
+                logger.warning(f"{model_name} with ID {param_id} does not exist")
+                raise ValidationError({
+                    param_name: f'{model_name} with ID {param_id} does not exist.'
+                })
+            return queryset.filter(**{filter_field: param_id})
+        except ValueError:
+            logger.warning(f"Invalid {param_name} parameter: {param_value}")
+            raise ValidationError({
+                param_name: f'Invalid {param_name} ID: "{param_value}". Must be a valid integer.'
+            })
+
     def get_queryset(self):
         try:
             qs = super().get_queryset()
-            user_id = self.request.query_params.get('user')
-            file_id = self.request.query_params.get('file')
             
             # Validate and filter by user_id
-            if user_id:
-                try:
-                    user_id = int(user_id)
-                    # Check if user exists
-                    from .models import User
-                    if not User.objects.filter(id=user_id).exists():
-                        logger.warning(f"User with ID {user_id} does not exist")
-                        raise ValidationError({
-                            'user': f'User with ID {user_id} does not exist.'
-                        })
-                    qs = qs.filter(user__id=user_id)
-                except ValueError:
-                    logger.warning(f"Invalid user_id parameter: {user_id}")
-                    raise ValidationError({
-                        'user': f'Invalid user ID: "{user_id}". Must be a valid integer.'
-                    })
+            from .models import User
+            qs = self._validate_and_filter_by_id(qs, 'user', 'user__id', User, 'User')
             
             # Validate and filter by file_id
-            if file_id:
-                try:
-                    file_id = int(file_id)
-                    # Check if file exists
-                    if not UploadedFile.objects.filter(id=file_id).exists():
-                        logger.warning(f"File with ID {file_id} does not exist")
-                        raise ValidationError({
-                            'file': f'File with ID {file_id} does not exist.'
-                        })
-                    qs = qs.filter(file__id=file_id)
-                except ValueError:
-                    logger.warning(f"Invalid file_id parameter: {file_id}")
-                    raise ValidationError({
-                        'file': f'Invalid file ID: "{file_id}". Must be a valid integer.'
-                    })
+            qs = self._validate_and_filter_by_id(qs, 'file', 'file__id', UploadedFile, 'File')
             
             return qs.order_by('-timestamp')
             
