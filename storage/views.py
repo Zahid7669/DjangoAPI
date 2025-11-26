@@ -122,13 +122,14 @@ class OrganizationViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Organization.objects.all()
     serializer_class = OrganizationSerializer
     permission_classes = [IsAuthenticated]
+    ordering = ['name']  # Alphabetical order
 
     def get_queryset(self):
         try:
             qs = super().get_queryset()
             # total downloads = count of downloads via files
             qs = qs.annotate(total_downloads=Count('files__downloads'))
-            return qs
+            return qs.order_by('name')  # Ensure ordering is applied
         except DatabaseError as e:
             logger.error(f"Database error fetching organizations: {str(e)}")
             raise ValidationError({
@@ -140,6 +141,7 @@ class DownloadViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Download.objects.all().select_related('user', 'file')
     serializer_class = DownloadSerializer
     permission_classes = [IsAuthenticated]
+    ordering = ['-timestamp']  # Newest downloads first
 
     def _validate_and_filter_by_id(self, queryset, param_name, filter_field, model_class, model_name):
         """Helper method to validate ID parameter and filter queryset"""
