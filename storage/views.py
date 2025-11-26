@@ -24,7 +24,7 @@ class UploadedFileViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         qs = super().get_queryset()
         qs = qs.annotate(download_count=Count('downloads'))
-        return qs
+        return qs.order_by('-uploaded_at')  # Most recent first
 
     def perform_create(self, serializer):
         user = self.request.user
