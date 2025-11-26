@@ -19,6 +19,7 @@ class UploadedFileViewSet(viewsets.ModelViewSet):
     queryset = UploadedFile.objects.all().select_related('owner', 'organization')
     serializer_class = UploadedFileSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ['get', 'post', 'delete', 'head', 'options']  # Exclude PUT and PATCH
 
     def get_queryset(self):
         qs = super().get_queryset()
