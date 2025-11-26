@@ -44,35 +44,49 @@ A RESTful API built with Django and Django REST Framework that allows authentica
    ```
 
 2. **Build and start services**
+   
+   **Option A: Using Make (recommended)**
    ```bash
    make build
    make up
-   ```
-   
-   *Without Make (Windows users):*
-   ```bash
-   docker compose build
-   docker compose up -d
-   ```
-
-3. **Run initial setup** (migrations + admin + demo users)
-   ```bash
    make setup
    ```
    
-   This will:
-   - Run database migrations
-   - Create admin user: `admin` / `admin`
-   - Create demo users:
-     - `alice` / `password` (Organization A)
-     - `bob` / `password` (Organization B)
+   **Option B: Using Docker directly**
+   ```bash
+   # Build the images
+   docker compose build
+   
+   # Start the services
+   docker compose up -d
+   
+   # Run migrations
+   docker compose exec web python manage.py migrate
+   
+   # Create admin user
+   docker compose exec web python manage.py create_admin
+   
+   # Create demo users
+   docker compose exec web python manage.py create_demo
+   ```
 
-4. **Verify installation**
+3. **Verify installation**
+   
+   **Using Make:**
    ```bash
    make test
    ```
    
-   You should see: `Ran 2 tests in X.XXXs - OK`
+   **Using Docker:**
+   ```bash
+   docker compose exec web python manage.py test storage
+   ```
+   
+   You should see: `Ran 9 tests in X.XXXs - OK`
+
+**User Credentials Created:**
+- Admin: `admin` / `admin`
+- Demo Users: `alice` / `password`, `bob` / `password`
 
 ### Using the Application
 
@@ -100,49 +114,47 @@ A RESTful API built with Django and Django REST Framework that allows authentica
 
 ### Additional Commands
 
+**Using Make:**
 ```bash
-make setup             # Run migrations + create admin + demo users
+make up                # Start services
+make down              # Stop services
 make logs              # View application logs
 make shell             # Open Django shell
+make test              # Run tests
+make migrate           # Run migrations
 make createadmin       # Create admin user only
 make createdemo        # Create demo users only
 make createsuperuser   # Create custom admin user (interactive)
-make down              # Stop services
+```
+
+**Using Docker directly:**
+```bash
+docker compose up -d                              # Start services
+docker compose down                               # Stop services
+docker compose logs -f                            # View logs (follow mode)
+docker compose exec web python manage.py shell   # Open Django shell
+docker compose exec web python manage.py test    # Run tests
+docker compose exec web python manage.py migrate # Run migrations
+docker compose exec web python manage.py create_admin      # Create admin user
+docker compose exec web python manage.py create_demo       # Create demo users
+docker compose exec web python manage.py createsuperuser   # Create custom admin
 ```
 
 ---
 
 ## Development
 
-### Project Structure
-
-```
-DjangoAPI/
-├── config/              # Django settings and URLs
-├── storage/             # Main application
-│   ├── models.py       # Organization, User, UploadedFile, Download
-│   ├── serializers.py  # DRF serializers
-│   ├── views.py        # API viewsets
-│   ├── tests/          # Automated tests
-│   └── management/     # Custom management commands
-├── docker-compose.yml  # Docker services configuration
-├── Dockerfile          # Web container definition
-├── Makefile           # Command shortcuts
-└── requirements.txt    # Python dependencies
-```
-
 ### Running Tests
 
+**Using Make:**
 ```bash
 make test
 ```
 
-Tests cover:
-- File upload functionality
-- File download with tracking
-- Download count aggregation
-- Organization statistics
-- User/file filtering
+**Using Docker:**
+```bash
+docker compose exec web python manage.py test storage
+```
 
 ### Database
 
@@ -151,85 +163,3 @@ Tests cover:
 - **Data persistence**: Stored in Docker volume `postgres_data`
 
 ---
-
-## Troubleshooting
-
-### Port 8000 already in use
-Change the port mapping in `docker-compose.yml`:
-```yaml
-ports:
-  - '8001:8000'  # Use 8001 instead
-```
-
-### Docker file sharing error (Mac)
-1. Open Docker Desktop
-2. Settings → Resources → File Sharing
-3. Add your project directory
-4. Apply & Restart
-
-### Tests not running
-Ensure services are up and migrations are applied:
-```bash
-docker compose ps          # Check services
-make migrate              # Apply migrations
-make test                 # Run tests
-```
-
----
-
-## License
-
-MIT
-# File Storage Application
-
-A simple file storage web application built with **Django** and **Django REST Framework**, running in **Docker** using **Docker Compose**.  
-Authenticated users can upload and download files, and the system tracks all downloads per file, user, and organization.
-
-The browsable API provided by Django REST Framework serves as the frontend.
-
----
-
-## Features
-
-The application provides:
-
-- **Session-based authentication**
-  - Users can log in and log out.
-  - Each user belongs to an **organization**.
-- **File uploads**
-  - Authenticated users can upload files.
-  - Uploaded files belong to the same organization as the uploader.
-- **File downloads + tracking**
-  - Users can see and download files from **any organization**.
-  - Each download is recorded.
-- **Aggregated statistics**
-  - List all files + how many times each has been downloaded.
-  - List all organizations + total download count of all files belonging to that org.
-  - List all downloads done by a single user.
-  - List all downloads for a single file.
-
----
-
-## Tech Stack
-
-- **Backend**: Django, Django REST Framework  
-- **Auth**: Session authentication  
-- **Database**: (e.g.) PostgreSQL (configurable)  
-- **Containerization**: Docker, Docker Compose  
-
----
-
-## Getting Started
-
-### 1. Prerequisites
-
-Make sure you have:
-
-- [Docker](https://www.docker.com/)  
-- [Docker Compose](https://docs.docker.com/compose/)  
-
-Clone the repository:
-
-```bash
-git clone <YOUR_REPO_URL> file-storage-app
-cd file-storage-app
